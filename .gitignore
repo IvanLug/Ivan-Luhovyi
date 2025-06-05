@@ -1,194 +1,112 @@
-# Byte-compiled / optimized / DLL files
-__pycache__/
-*.py[cod]
-*$py.class
+import datetime
 
-# C extensions
-*.so
+# Список для збереження подій (кожна подія — це словник з назвою, датою та категорією)
+events = []
 
-# Distribution / packaging
-.Python
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-share/python-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
-MANIFEST
+# Функція привітання користувача при запуску
 
-# PyInstaller
-#  Usually these files are written by a python script from a template
-#  before PyInstaller builds the exe, so as to inject date/other infos into it.
-*.manifest
-*.spec
+def greet():
+    print("Привіт! Я твій органайзер подій. Напиши 'допомога' для перегляду команд.")
 
-# Installer logs
-pip-log.txt
-pip-delete-this-directory.txt
+# Вивід списку доступних команд
 
-# Unit test / coverage reports
-htmlcov/
-.tox/
-.nox/
-.coverage
-.coverage.*
-.cache
-nosetests.xml
-coverage.xml
-*.cover
-*.py,cover
-.hypothesis/
-.pytest_cache/
-cover/
+def show_help():
+    print("""
+Список команд:
+- допомога
+- додати подію
+- показати події
+- події на тиждень
+- пошук за категорією
+- видалити подію
+- вийти
+""")
 
-# Translations
-*.mo
-*.pot
+# Додавання нової події: запит назви, дати, категорії
 
-# Django stuff:
-*.log
-local_settings.py
-db.sqlite3
-db.sqlite3-journal
+def add_event():
+    name = input("Назва події: ")
+    date_str = input("Дата (рррр-мм-дд): ")
+    category = input("Категорія/Опис: ")
+    try:
+        # Перетворення рядка в об'єкт дати
+        date = datetime.datetime.strptime(date_str, "%Y-%m-%d").date()
+        # Додавання події до списку
+        events.append({"name": name, "date": date, "category": category})
+        print("Подію додано!")
+    except ValueError:
+        print("Невірний формат дати. Спробуй ще раз.")
 
-# Flask stuff:
-instance/
-.webassets-cache
+# Показ усіх подій у хронологічному порядку
 
-# Scrapy stuff:
-.scrapy
+def show_events():
+    if not events:
+        print("Подій немає.")
+        return
+    for e in sorted(events, key=lambda x: x['date']):
+        print(f"{e['date']} - {e['name']} ({e['category']})")
 
-# Sphinx documentation
-docs/_build/
+# Вивід подій, які відбудуться протягом наступного тижня
 
-# PyBuilder
-.pybuilder/
-target/
+def events_this_week():
+    today = datetime.date.today()
+    end_week = today + datetime.timedelta(days=7)
+    week_events = [e for e in events if today <= e['date'] <= end_week]
+    if not week_events:
+        print("Подій на цей тиждень немає.")
+    else:
+        for e in week_events:
+            print(f"{e['date']} - {e['name']} ({e['category']})")
 
-# Jupyter Notebook
-.ipynb_checkpoints
+# Пошук подій за ключовим словом у категорії або описі
 
-# IPython
-profile_default/
-ipython_config.py
+def search_by_category():
+    keyword = input("Введіть категорію або ключове слово: ").lower()
+    found = [e for e in events if keyword in e['category'].lower()]
+    if not found:
+        print("Подій не знайдено.")
+    else:
+        for e in found:
+            print(f"{e['date']} - {e['name']} ({e['category']})")
 
-# pyenv
-#   For a library or package, you might want to ignore these files since the code is
-#   intended to run in multiple environments; otherwise, check them in:
-# .python-version
+# Видалення події за назвою та датою
 
-# pipenv
-#   According to pypa/pipenv#598, it is recommended to include Pipfile.lock in version control.
-#   However, in case of collaboration, if having platform-specific dependencies or dependencies
-#   having no cross-platform support, pipenv may install dependencies that don't work, or not
-#   install all needed dependencies.
-#Pipfile.lock
+def delete_event():
+    name = input("Назва події для видалення: ")
+    date_str = input("Дата події (рррр-мм-дд): ")
+    try:
+        date = datetime.datetime.strptime(date_str, "%Y-%m-%d").date()
+        global events
+        # Фільтрація списку подій, залишаючи всі, крім вказаної
+        events = [e for e in events if not (e['name'] == name and e['date'] == date)]
+        print("Якщо подія існувала, її видалено.")
+    except ValueError:
+        print("Невірний формат дати.")
 
-# UV
-#   Similar to Pipfile.lock, it is generally recommended to include uv.lock in version control.
-#   This is especially recommended for binary packages to ensure reproducibility, and is more
-#   commonly ignored for libraries.
-#uv.lock
+# Головна функція: цикл очікування та обробки команд користувача
 
-# poetry
-#   Similar to Pipfile.lock, it is generally recommended to include poetry.lock in version control.
-#   This is especially recommended for binary packages to ensure reproducibility, and is more
-#   commonly ignored for libraries.
-#   https://python-poetry.org/docs/basic-usage/#commit-your-poetrylock-file-to-version-control
-#poetry.lock
+def main():
+    greet()
+    while True:
+        command = input("\nВведи команду: ").strip().lower()
+        if command == "допомога":
+            show_help()
+        elif command == "додати подію":
+            add_event()
+        elif command == "показати події":
+            show_events()
+        elif command == "події на тиждень":
+            events_this_week()
+        elif command == "пошук за категорією":
+            search_by_category()
+        elif command == "видалити подію":
+            delete_event()
+        elif command == "вийти":
+            print("До зустрічі!")
+            break
+        else:
+            print("Невідома команда. Напиши 'допомога' для списку команд.")
 
-# pdm
-#   Similar to Pipfile.lock, it is generally recommended to include pdm.lock in version control.
-#pdm.lock
-#   pdm stores project-wide configurations in .pdm.toml, but it is recommended to not include it
-#   in version control.
-#   https://pdm.fming.dev/latest/usage/project/#working-with-version-control
-.pdm.toml
-.pdm-python
-.pdm-build/
-
-# PEP 582; used by e.g. github.com/David-OConnor/pyflow and github.com/pdm-project/pdm
-__pypackages__/
-
-# Celery stuff
-celerybeat-schedule
-celerybeat.pid
-
-# SageMath parsed files
-*.sage.py
-
-# Environments
-.env
-.venv
-env/
-venv/
-ENV/
-env.bak/
-venv.bak/
-
-# Spyder project settings
-.spyderproject
-.spyproject
-
-# Rope project settings
-.ropeproject
-
-# mkdocs documentation
-/site
-
-# mypy
-.mypy_cache/
-.dmypy.json
-dmypy.json
-
-# Pyre type checker
-.pyre/
-
-# pytype static type analyzer
-.pytype/
-
-# Cython debug symbols
-cython_debug/
-
-# PyCharm
-#  JetBrains specific template is maintained in a separate JetBrains.gitignore that can
-#  be found at https://github.com/github/gitignore/blob/main/Global/JetBrains.gitignore
-#  and can be added to the global gitignore or merged into this file.  For a more nuclear
-#  option (not recommended) you can uncomment the following to ignore the entire idea folder.
-#.idea/
-
-# Abstra
-# Abstra is an AI-powered process automation framework.
-# Ignore directories containing user credentials, local state, and settings.
-# Learn more at https://abstra.io/docs
-.abstra/
-
-# Visual Studio Code
-#  Visual Studio Code specific template is maintained in a separate VisualStudioCode.gitignore 
-#  that can be found at https://github.com/github/gitignore/blob/main/Global/VisualStudioCode.gitignore
-#  and can be added to the global gitignore or merged into this file. However, if you prefer, 
-#  you could uncomment the following to ignore the enitre vscode folder
-# .vscode/
-
-# Ruff stuff:
-.ruff_cache/
-
-# PyPI configuration file
-.pypirc
-
-# Cursor
-#  Cursor is an AI-powered code editor. `.cursorignore` specifies files/directories to
-#  exclude from AI features like autocomplete and code analysis. Recommended for sensitive data
-#  refer to https://docs.cursor.com/context/ignore-files
-.cursorignore
-.cursorindexingignore
+# Запуск програми
+if __name__ == "__main__":
+    main()
